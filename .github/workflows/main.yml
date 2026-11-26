@@ -1,0 +1,33 @@
+name: Build Magisk Modules
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code checkout
+        uses: actions/checkout@v4
+
+      - name: Permissions set karo
+        run: |
+          for d in touch_better touch_fast fps_stable; do
+            chmod 755 $d/service.sh $d/uninstall.sh
+            chmod 755 $d/META-INF/com/google/android/update-binary
+          done
+
+      - name: Zip banao
+        run: |
+          mkdir -p out
+          (cd touch_better && zip -r ../out/Touch_Better_Magisk.zip .)
+          (cd touch_fast   && zip -r ../out/Touch_Fast_Magisk.zip .)
+          (cd fps_stable   && zip -r ../out/FPS_Stable_Magisk.zip .)
+
+      - name: Zip upload karo
+        uses: actions/upload-artifact@v4
+        with:
+          name: magisk-modules
+          path: out/*.zip
